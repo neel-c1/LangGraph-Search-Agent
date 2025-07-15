@@ -48,6 +48,7 @@ builder.set_finish_point("agent_node")
 app = builder.compile()
 
 if __name__ == "__main__":
-    input_text = input("Search: ")
-    result = app.invoke({"input": input_text})
-    print("\n💬 Agent response:", result["output"])
+    while True:
+        input_text = input("Search: ")
+        result = app.invoke({"input": input_text})
+        print(f"\n💬 Agent response: {result["output"]}\n")
