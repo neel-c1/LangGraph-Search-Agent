@@ -1,57 +1,53 @@
-from langchain.agents import Tool, initialize_agent, AgentType
-from langchain.tools import Tool
+from langchain_community.chat_models import ChatOpenAI
+from langchain_community.utilities import SerpAPIWrapper
+from langchain_community.tools import Tool
 from langchain.memory import ConversationBufferMemory
-from langchain.chat_models import ChatOpenAI
-from langchain.utilities import SerpAPIWrapper
 from langgraph.graph import StateGraph, END
+from dotenv import load_dotenv
 
-# Define tools
+load_dotenv()
+
 search = SerpAPIWrapper()
 search_tool = Tool(
     name="Google Search",
     func=search.run,
-    description="Useful for answering questions about current events or factual queries."
+    description="Use for real-time info, current events, or web lookup."
 )
 
-# Memory
-memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
-
-# Language model
 llm = ChatOpenAI(model="gpt-4", temperature=0.7)
 
-# Setup
-tools = [search_tool]
-agent = initialize_agent(
-    tools,
-    llm,
-    agent=AgentType.CONVERSATIONAL_REACT_DESCRIPTION,
-    memory=memory,
-    verbose=True
+memory = ConversationBufferMemory(
+    memory_key="chat_history",
+    return_messages=True
 )
 
-# LangChain
-class AgentState:
-    def __init__(self):
-        self.input = None
-        self.output = None
+def agent_node(state: dict) -> dict:
+    memory.chat_memory.messages = state.get("chat_history", [])
 
-def run_agent(state: AgentState) -> AgentState:
-    print(f"Running agent on input: {state.input}")
-    response = agent.run(state.input)
-    state.output = response
-    return state
+    user_input = state["input"]
 
-# LangGraph graph setup
-graph = StateGraph(AgentState)
-graph.add_node("run_agent", run_agent)
-graph.set_entry_point("run_agent")
-graph.set_finish_point("run_agent", END)
+    if "news" in user_input.lower() or "regulations" in user_input.lower():
+        search_result = search_tool.run(user_input)
+        prompt = f"User asked: {user_input}\n\nSearch result:\n{search_result}\n\nPlease summarize or respond."
+    else:
+        prompt = user_input
 
-app = graph.compile()
+    response = llm.invoke(prompt)
+    memory.save_context({"input": user_input}, {"output": response.content})
+
+    return {
+        "input": user_input,
+        "output": response.content,
+        "chat_history": memory.chat_memory.messages,
+    }
+
+builder = StateGraph(dict)
+builder.add_node("agent_node", agent_node)
+builder.set_entry_point("agent_node")
+builder.set_finish_point("agent_node")
+app = builder.compile()
 
 if __name__ == "__main__":
-    state = AgentState()
-    state.input = "What's the latest news on the AI regulations in the EU?"
-    result = app.invoke(state)
-    print("Agent response:", result.output)
-
+    input_text = input("Search: ")
+    result = app.invoke({"input": input_text})
+    print("\n💬 Agent response:", result["output"])
