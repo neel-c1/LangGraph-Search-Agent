@@ -4,6 +4,7 @@ from langgraph.graph import StateGraph, END
 from dotenv import load_dotenv
 
 from tools import search_tool
+from prompts import BASE_PROMPT
 
 load_dotenv()
 
@@ -16,14 +17,15 @@ memory = ConversationBufferMemory(
 
 def agent_node(state: dict) -> dict:
     memory.chat_memory.messages = state.get("chat_history", [])
-
     user_input = state["input"]
 
     if "news" in user_input.lower() or "regulations" in user_input.lower():
         search_result = search_tool.run(user_input)
-        prompt = f"User asked: {user_input}\n\nSearch result:\n{search_result}\n\nPlease summarize or respond."
+        context = search_result
     else:
-        prompt = user_input
+        context = ""
+
+    prompt = BASE_PROMPT.format(user_input=user_input, context=context)
 
     response = llm.invoke(prompt)
     memory.save_context({"input": user_input}, {"output": response.content})
