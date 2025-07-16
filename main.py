@@ -1,18 +1,11 @@
 from langchain_community.chat_models import ChatOpenAI
-from langchain_community.utilities import SerpAPIWrapper
-from langchain_community.tools import Tool
 from langchain.memory import ConversationBufferMemory
 from langgraph.graph import StateGraph, END
 from dotenv import load_dotenv
 
-load_dotenv()
+from tools import search_tool
 
-search = SerpAPIWrapper()
-search_tool = Tool(
-    name="Google Search",
-    func=search.run,
-    description="Use for real-time info, current events, or web lookup."
-)
+load_dotenv()
 
 llm = ChatOpenAI(model="gpt-4", temperature=0.7)
 
