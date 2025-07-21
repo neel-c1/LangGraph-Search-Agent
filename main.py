@@ -17,9 +17,9 @@ app = builder.compile()
 
 if __name__ == "__main__":
     while True:
-        input_text = input("Research Query: ")
+        input_text = input("\nResearch Query: ")
         result = app.invoke({"input": input_text})
+        print("\n" + "-" * 60)
         print("\nFinal Report:\n")
         print(result["output"])
         print("\n" + "-" * 60 + "\n")
-

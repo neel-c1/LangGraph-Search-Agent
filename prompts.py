@@ -33,17 +33,12 @@ WRITE_PROMPT = """You are a research synthesis assistant.
 
 You have received structured findings for a user's question.
 
-Your task is to write a coherent summary report using the research findings provided below.
+Your task is to write a concise, plain-text summary report using the research findings provided below.
+
+Do not include any markdown formatting, lists, or headings. Just write in natural, readable paragraphs suitable for terminal output.
 
 Research findings:
 {research_findings}
-
-Write a well-structured and informative report that includes:
-- An introduction that defines the topic and scope
-- A section for each sub-question summarizing the key findings
-- A conclusion that synthesizes the overall insight
-
-Ensure the response is factual, clearly written, and based only on the findings provided.
 """
 
 def get_prompt(role: str, **kwargs) -> str:

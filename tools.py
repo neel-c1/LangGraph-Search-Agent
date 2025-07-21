@@ -23,7 +23,7 @@ search_tool = Tool(
 
 # === LLM and Memory ===
 llm = ChatOpenAI(model="gpt-4.1-mini", temperature=0.7)
-memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
+memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True, k=2)
 
 # === Node: Scope ===
 def scope_node(state: dict) -> dict:
@@ -48,7 +48,7 @@ def extract_subquestions(research_brief: str) -> list[str]:
 def run_search_and_summarize(sub_q: str) -> dict:
     try:
         search_result = search_tool.run(sub_q)
-        snippet = search_result[:1000]
+        snippet = search_result[:500]
         summary_prompt = f"""You're an AI assistant helping synthesize research.
 
 Search snippet:
@@ -72,22 +72,35 @@ Summarize the relevant answer and cite any sources."""
 # === Node: Research ===
 def research_node(state: dict) -> dict:
     research_brief = state["research_brief"]
+
+    # Extract and cap sub-questions
     subquestions = extract_subquestions(research_brief)
     if not subquestions:
         subquestions = [research_brief]
+    else:
+        subquestions = subquestions[:3]
 
     results = []
     for sub_q in subquestions:
-        print(f"Searching for: {sub_q}")
         result = run_search_and_summarize(sub_q)
         results.append(result)
 
-    findings = "\n\n".join(
-        f"### {item['sub_question']}\n"
-        f"Snippet:\n{item['search_snippet']}\n\n"
-        f"Summary:\n{item['summary']}"
-        for item in results
-    )
+    # Filter out failed searches
+    valid_results = [
+        item for item in results
+        if item["summary"].strip() and not item["summary"].lower().startswith("failed")
+    ]
+
+    if not valid_results:
+        findings = (
+            "No reliable information was found for the research request. "
+            "The topic may be too recent, not well covered, or unclear."
+        )
+    else:
+        findings = "\n\n".join(
+            f"{item['sub_question']}:\n{item['summary']}"
+            for item in valid_results
+        )
 
     return {
         "input": state["input"],
@@ -96,15 +109,17 @@ def research_node(state: dict) -> dict:
         "chat_history": state["chat_history"]
     }
 
+
 # === Node: Write ===
 def write_node(state: dict) -> dict:
     findings = state["research_findings"]
     prompt = get_prompt("write", research_findings=findings)
     response = llm.invoke(prompt).content
-    memory.save_context({"input": state["input"]}, {"output": response})
+    cleaned_output = " ".join(response.splitlines()).strip()
+    memory.save_context({"input": state["input"]}, {"output": cleaned_output})
     return {
         "input": state["input"],
-        "output": response,
+        "output": cleaned_output,
         "chat_history": memory.chat_memory.messages
     }
 
