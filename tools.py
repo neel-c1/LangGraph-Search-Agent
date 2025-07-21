@@ -22,7 +22,7 @@ search_tool = Tool(
 )
 
 # === LLM and Memory ===
-llm = ChatOpenAI(model="gpt-4", temperature=0.7)
+llm = ChatOpenAI(model="gpt-4.1-mini", temperature=0.7)
 memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
 
 # === Node: Scope ===
