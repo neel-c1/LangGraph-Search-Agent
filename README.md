@@ -23,6 +23,7 @@ pip3 install -U pip
 pip3 install -r requirements.txt
 python3 main.py
 ```
+Alternatively, you can run `python3 main.py gui` if you'd like a GUI based program.
 
 ## Done?
 

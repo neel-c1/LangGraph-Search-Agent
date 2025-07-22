@@ -3,6 +3,7 @@ langchain_core
 langchain_community
 langgraph
 openai
+gradio
 serpapi
 python-dotenv
 google-search-results
