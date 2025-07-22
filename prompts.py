@@ -13,7 +13,7 @@ User input:
 "{user_input}"
 
 Respond with either:
-- A structured research brief including the overall topic and 2–4 sub-questions.
+- A structured research brief including the overall topic and 2-4 sub-questions.
 - Or a list of clarifying questions needed to better define the request.
 """
 
@@ -33,9 +33,9 @@ WRITE_PROMPT = """You are a research synthesis assistant.
 
 You have received structured findings for a user's question.
 
-Your task is to write a concise, plain-text summary report using the research findings provided below.
+Your task is to write a detailed, plain-text report of **two or three paragraphs** using the research findings provided below. Expand on the material by explaining implications, context, or significance where relevant.
 
-Do not include any markdown formatting, lists, or headings. Just write in natural, readable paragraphs suitable for terminal output.
+Write in a clear and engaging style, suitable for a well-informed but non-expert reader. Avoid bullet points, markdown, or technical formatting. Just use natural paragraphs.
 
 Research findings:
 {research_findings}

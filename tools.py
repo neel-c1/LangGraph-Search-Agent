@@ -12,7 +12,7 @@ load_dotenv()
 # === Search Tool ===
 search = SerpAPIWrapper(
     serpapi_api_key=os.environ.get("SERPAPI_API_KEY"),
-    params={"gl": "us", "hl": "en", "tbm": "nws"}
+    params={"gl": "us", "hl": "en"}
 )
 
 search_tool = Tool(
