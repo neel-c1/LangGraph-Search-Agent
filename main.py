@@ -20,7 +20,7 @@ app = builder.compile()
 
 def cli_mode():
     while True:
-        input_text = input("\Search Query: ")
+        input_text = input("\nSearch Query: ")
         result = app.invoke({"input": input_text})
         print("\n" + "-" * 60)
         print("\nFinal Report:\n")
